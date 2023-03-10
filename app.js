@@ -1,11 +1,25 @@
+require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const { urlencoded } = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
 const app = express();
-var port = 3000;
+
+const PORT = process.env.PORT || 3000;
 var host = "127.0.0.1";
+
+mongoose.set('strictQuery', false);
+
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongooseDB connected: ${conn.connect.host}`);
+    } catch (err) {
+        console.log(err);
+        process.exit(1);
+    }
+}
 
 // utilizamos ejs como motor de visualizacion.
 app.set('view engine', 'ejs');
@@ -15,7 +29,7 @@ app.use(express.static("public"));
 
 // base de datos "todolistDB", true.
 // mongoose.connect(`mongodb://${host}:27017/todolistDB`, { useNewUrlParser: true }); db -> local
-mongoose.connect(`mongodb+srv://dbadmin:Test123@cluster0.jtiicuq.mongodb.net/todolistDB`, { useNewUrlParser: true }); // db -> atlas
+//mongoose.connect(`mongodb+srv://dbadmin:Test123@cluster0.jtiicuq.mongodb.net/todolistDB`, { useNewUrlParser: true }); // db -> atlas
 
 // esquema item generado.
 const itemsSchema = new mongoose.Schema({
@@ -151,7 +165,11 @@ app.post("/delete", (req, res) => {
 
 });
 
-app.listen(port, () => console.log(`Server started on port ${port}.`));
+connectDB().then(() => {
+    app.listen(PORT, () => console.log(`Server started on port ${PORT}.`));
+
+})
+
 
 
 /* Seccion de URL Resuelta.
